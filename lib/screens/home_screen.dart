@@ -196,15 +196,19 @@ class _HomeScreenState extends State<HomeScreen>
             ],
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.favorite, color: Colors.black),
-          tooltip: 'Favorites',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FavoritesScreen()),
-            );
-          },
+        const SizedBox(width: 12),
+        Align(
+          alignment: Alignment.topCenter,
+          child: IconButton(
+            icon: const Icon(Icons.favorite, color: Colors.black),
+            tooltip: 'Favorites',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -212,6 +216,7 @@ class _HomeScreenState extends State<HomeScreen>
 
   Widget _buildInfoSection() {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Expanded(
           child: Column(
@@ -238,15 +243,19 @@ class _HomeScreenState extends State<HomeScreen>
             ],
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.favorite, color: Colors.black),
-          tooltip: 'Favorites',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const FavoritesScreen()),
-            );
-          },
+        const SizedBox(width: 12),
+        Align(
+          alignment: Alignment.topCenter,
+          child: IconButton(
+            icon: const Icon(Icons.favorite, color: Colors.black),
+            tooltip: 'Favorites',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+              );
+            },
+          ),
         ),
       ],
     );
