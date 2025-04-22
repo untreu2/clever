@@ -14,7 +14,7 @@ class GeminiService {
     Each movie must include:
     - "title": the name of the movie and year
     - "description": a short plot summary
-    - "url": a reliable external link (IMDb, Letterboxd, etc.)
+    - "url": a reliable letterboxd link
     - "quote": a memorable quote from the movie without "" signs (English only)
 
     Respond only in $language.
