@@ -33,10 +33,7 @@ class _MovieCardState extends State<MovieCard> {
   }
 
   Future<void> _toggleFavorite() async {
-    setState(() {
-      isFavorite = !isFavorite;
-    });
-
+    setState(() => isFavorite = !isFavorite);
     await FavoriteService.toggleFavorite(widget.item.url, isFavorite);
     widget.onFavoriteChanged?.call();
   }
@@ -75,10 +72,17 @@ class _MovieCardState extends State<MovieCard> {
                 right: 8,
                 child: GestureDetector(
                   onTap: _toggleFavorite,
-                  child: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: isFavorite ? Colors.red : Colors.white,
-                    size: 24,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder:
+                        (child, anim) =>
+                            ScaleTransition(scale: anim, child: child),
+                    child: Icon(
+                      isFavorite ? Icons.favorite : Icons.favorite_border,
+                      key: ValueKey<bool>(isFavorite),
+                      color: isFavorite ? Colors.red : Colors.white,
+                      size: 24,
+                    ),
                   ),
                 ),
               ),

@@ -8,6 +8,7 @@ import 'package:clever/services/gemini_service.dart';
 import 'package:clever/services/favorite_service.dart';
 import 'package:clever/models/movie_item.dart';
 import 'package:clever/widgets/movie_card.dart';
+import 'package:clever/screens/favorites_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -62,12 +63,23 @@ class _HomeScreenState extends State<HomeScreen>
 
       final favUrls = await FavoriteService.getFavoriteUrls();
 
-      for (var item in items) {
-        item.isFavorite = favUrls.contains(item.url);
-      }
+      setState(() {
+        movies =
+            items
+                .map(
+                  (item) => MovieItem(
+                    title: item.title,
+                    description: item.description,
+                    url: item.url,
+                    quote: item.quote,
+                    imageUrl: item.imageUrl,
+                    isFavorite: favUrls.contains(item.url),
+                  ),
+                )
+                .toList();
+      });
 
-      setState(() => movies = items);
-      await _saveMoviesList(items);
+      await _saveMoviesList(movies);
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -90,13 +102,20 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (jsonString != null) {
       final List decodedList = jsonDecode(jsonString);
-      final loadedMovies =
-          decodedList.map((e) => MovieItem.fromJson(e)).map((movie) {
-            movie.isFavorite = favUrls.contains(movie.url);
-            return movie;
-          }).toList();
-
-      setState(() => movies = loadedMovies);
+      setState(() {
+        movies =
+            decodedList.map((e) {
+              final movie = MovieItem.fromJson(e);
+              return MovieItem(
+                title: movie.title,
+                description: movie.description,
+                url: movie.url,
+                quote: movie.quote,
+                imageUrl: movie.imageUrl,
+                isFavorite: favUrls.contains(movie.url),
+              );
+            }).toList();
+      });
     }
   }
 
@@ -105,8 +124,14 @@ class _HomeScreenState extends State<HomeScreen>
     setState(() {
       movies =
           movies.map((movie) {
-            movie.isFavorite = favUrls.contains(movie.url);
-            return movie;
+            return MovieItem(
+              title: movie.title,
+              description: movie.description,
+              url: movie.url,
+              quote: movie.quote,
+              imageUrl: movie.imageUrl,
+              isFavorite: favUrls.contains(movie.url),
+            );
           }).toList();
     });
   }
@@ -133,58 +158,95 @@ class _HomeScreenState extends State<HomeScreen>
       return const SizedBox.shrink();
     }
 
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Clever',
-          style: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.w700,
-            color: Colors.black,
-            letterSpacing: -1,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Clever',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                  letterSpacing: -1,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '“${quote ?? 'Here’s something you might like.'}”',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.black87,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '— $title',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 8),
-        Text(
-          '“${quote ?? 'Here’s something you might like.'}”',
-          style: const TextStyle(
-            fontSize: 16,
-            fontStyle: FontStyle.italic,
-            color: Colors.black87,
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          '— $title',
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.black54,
-            fontWeight: FontWeight.w500,
-          ),
+        IconButton(
+          icon: const Icon(Icons.favorite, color: Colors.black),
+          tooltip: 'Favorites',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+            );
+          },
         ),
       ],
     );
   }
 
   Widget _buildInfoSection() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          'Clever',
-          style: TextStyle(
-            fontSize: 36,
-            fontWeight: FontWeight.w700,
-            color: Colors.black,
-            letterSpacing: -1,
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Clever',
+                style: TextStyle(
+                  fontSize: 36,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                  letterSpacing: -1,
+                ),
+              ),
+              SizedBox(height: 8),
+              Text(
+                "Type anything you're in the mood for — action, romance, something deep, or just a vibe. Let Clever do the rest.",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black54,
+                  height: 1.5,
+                ),
+              ),
+            ],
           ),
         ),
-        SizedBox(height: 8),
-        Text(
-          "Type anything you're in the mood for — action, romance, something deep, or just a vibe. Let Clever do the rest.",
-          style: TextStyle(fontSize: 16, color: Colors.black54, height: 1.5),
+        IconButton(
+          icon: const Icon(Icons.favorite, color: Colors.black),
+          tooltip: 'Favorites',
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const FavoritesScreen()),
+            );
+          },
         ),
       ],
     );
@@ -258,7 +320,6 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ),
       ),
-
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
@@ -298,6 +359,7 @@ class _HomeScreenState extends State<HomeScreen>
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) => MovieCard(
+                  key: ValueKey(movies[index].url),
                   item: movies[index],
                   onFavoriteChanged: _onFavoriteChanged,
                 ),
