@@ -1,20 +1,44 @@
+import 'package:clever/services/favorite_service.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../models/movie_item.dart';
 
-class MovieCard extends StatelessWidget {
+class MovieCard extends StatefulWidget {
   final MovieItem item;
+  final void Function()? onFavoriteChanged;
 
-  const MovieCard({super.key, required this.item});
+  const MovieCard({super.key, required this.item, this.onFavoriteChanged});
+
+  @override
+  State<MovieCard> createState() => _MovieCardState();
+}
+
+class _MovieCardState extends State<MovieCard> {
+  late bool isFavorite;
+
+  @override
+  void initState() {
+    super.initState();
+    isFavorite = widget.item.isFavorite;
+  }
 
   Future<void> _launchUrl() async {
-    final uri = Uri.parse(item.url);
+    final uri = Uri.parse(widget.item.url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      throw 'Could not launch ${item.url}';
+      throw 'Could not launch ${widget.item.url}';
     }
+  }
+
+  Future<void> _toggleFavorite() async {
+    setState(() {
+      isFavorite = !isFavorite;
+    });
+
+    await FavoriteService.toggleFavorite(widget.item.url, isFavorite);
+    widget.onFavoriteChanged?.call();
   }
 
   @override
@@ -27,26 +51,37 @@ class MovieCard extends StatelessWidget {
             children: [
               Container(
                 width: double.infinity,
+                height: 180,
                 decoration: BoxDecoration(
                   image:
-                      item.imageUrl != null
+                      widget.item.imageUrl != null
                           ? DecorationImage(
-                            image: CachedNetworkImageProvider(item.imageUrl!),
+                            image: CachedNetworkImageProvider(
+                              widget.item.imageUrl!,
+                            ),
                             fit: BoxFit.cover,
                           )
                           : null,
                   color: Colors.black87,
-                  borderRadius: BorderRadius.zero,
                 ),
-                height: 180,
               ),
-
               Container(
                 width: double.infinity,
                 height: 180,
-                color: Colors.black.withOpacity(0.8),
+                color: Colors.black.withOpacity(0.75),
               ),
-
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: _toggleFavorite,
+                  child: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: isFavorite ? Colors.red : Colors.white,
+                    size: 24,
+                  ),
+                ),
+              ),
               Positioned.fill(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -55,7 +90,7 @@ class MovieCard extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       Text(
-                        item.title,
+                        widget.item.title,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -64,7 +99,7 @@ class MovieCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        item.description,
+                        widget.item.description,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.white70,
@@ -74,7 +109,7 @@ class MovieCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 6),
                       Text(
-                        Uri.parse(item.url).host,
+                        Uri.parse(widget.item.url).host,
                         style: const TextStyle(
                           fontSize: 12,
                           color: Colors.white54,

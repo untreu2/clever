@@ -5,6 +5,7 @@ import 'package:flutter/rendering.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:clever/services/gemini_service.dart';
+import 'package:clever/services/favorite_service.dart';
 import 'package:clever/models/movie_item.dart';
 import 'package:clever/widgets/movie_card.dart';
 
@@ -58,6 +59,13 @@ class _HomeScreenState extends State<HomeScreen>
         genre: genre.trim(),
         language: 'en',
       );
+
+      final favUrls = await FavoriteService.getFavoriteUrls();
+
+      for (var item in items) {
+        item.isFavorite = favUrls.contains(item.url);
+      }
+
       setState(() => movies = items);
       await _saveMoviesList(items);
     } catch (e) {
@@ -78,12 +86,29 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _loadMoviesList() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString('movie_list');
+    final favUrls = await FavoriteService.getFavoriteUrls();
+
     if (jsonString != null) {
       final List decodedList = jsonDecode(jsonString);
       final loadedMovies =
-          decodedList.map((e) => MovieItem.fromJson(e)).toList();
-      setState(() => movies = List<MovieItem>.from(loadedMovies));
+          decodedList.map((e) => MovieItem.fromJson(e)).map((movie) {
+            movie.isFavorite = favUrls.contains(movie.url);
+            return movie;
+          }).toList();
+
+      setState(() => movies = loadedMovies);
     }
+  }
+
+  void _onFavoriteChanged() async {
+    final favUrls = await FavoriteService.getFavoriteUrls();
+    setState(() {
+      movies =
+          movies.map((movie) {
+            movie.isFavorite = favUrls.contains(movie.url);
+            return movie;
+          }).toList();
+    });
   }
 
   Widget buildShimmerCard() {
@@ -272,7 +297,10 @@ class _HomeScreenState extends State<HomeScreen>
           else
             SliverList(
               delegate: SliverChildBuilderDelegate(
-                (context, index) => MovieCard(item: movies[index]),
+                (context, index) => MovieCard(
+                  item: movies[index],
+                  onFavoriteChanged: _onFavoriteChanged,
+                ),
                 childCount: movies.length,
               ),
             ),

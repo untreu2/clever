@@ -4,15 +4,17 @@ class MovieItem {
   final String title;
   final String description;
   final String url;
-  final String? imageUrl;
   final String? quote;
+  String? imageUrl;
+  bool isFavorite;
 
   MovieItem({
     required this.title,
     required this.description,
     required this.url,
-    this.imageUrl,
     this.quote,
+    this.imageUrl,
+    this.isFavorite = false,
   });
 
   factory MovieItem.fromJson(Map<String, dynamic> json) {
@@ -22,6 +24,7 @@ class MovieItem {
       url: json['url'],
       quote: json['quote'],
       imageUrl: json['imageUrl'],
+      isFavorite: json['isFavorite'] ?? false,
     );
   }
 
@@ -32,6 +35,7 @@ class MovieItem {
       'url': url,
       'quote': quote,
       'imageUrl': imageUrl,
+      'isFavorite': isFavorite,
     };
   }
 
@@ -43,6 +47,7 @@ class MovieItem {
       url: json['url'],
       quote: json['quote'],
       imageUrl: metadata?.image,
+      isFavorite: json['isFavorite'] ?? false,
     );
   }
 }
