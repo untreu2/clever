@@ -1,8 +1,6 @@
-import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:clever/models/movie_item.dart';
 import 'package:clever/services/favorite_service.dart';
@@ -27,49 +25,25 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   }
 
   Future<void> _loadFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('movie_list');
-    final favUrls = await FavoriteService.getFavoriteUrls();
-
     await Future.delayed(const Duration(milliseconds: 300));
 
-    if (jsonString != null) {
-      final List decoded = jsonDecode(jsonString);
-      final List<MovieItem> all =
-          decoded.map((e) => MovieItem.fromJson(e)).toList().cast<MovieItem>();
+    final copiedFavorites = await FavoriteService.getFavoriteMovies();
 
-      final copiedFavorites =
-          all
-              .where((m) => favUrls.contains(m.url))
-              .map(
-                (m) => MovieItem(
-                  title: m.title,
-                  description: m.description,
-                  url: m.url,
-                  quote: m.quote,
-                  imageUrl: m.imageUrl,
-                  isFavorite: true,
-                ),
-              )
-              .toList();
+    final quoteItems =
+        copiedFavorites
+            .where((item) => (item.quote?.isNotEmpty ?? false))
+            .toList();
 
-      final quoteItems =
-          copiedFavorites
-              .where((item) => (item.quote?.isNotEmpty ?? false))
-              .toList();
-      final randomIndex =
-          quoteItems.isNotEmpty ? Random().nextInt(quoteItems.length) : null;
+    final randomIndex =
+        quoteItems.isNotEmpty ? Random().nextInt(quoteItems.length) : null;
 
-      setState(() {
-        favorites = copiedFavorites;
-        if (randomIndex != null) {
-          randomQuoteItem = quoteItems[randomIndex];
-        }
-        loading = false;
-      });
-    } else {
-      setState(() => loading = false);
-    }
+    setState(() {
+      favorites = copiedFavorites;
+      if (randomIndex != null) {
+        randomQuoteItem = quoteItems[randomIndex];
+      }
+      loading = false;
+    });
   }
 
   Widget buildShimmerCard() {

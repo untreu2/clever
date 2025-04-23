@@ -21,6 +21,12 @@ class _MovieCardState extends State<MovieCard> {
   void initState() {
     super.initState();
     isFavorite = widget.item.isFavorite;
+    _loadFavoriteStatus();
+  }
+
+  Future<void> _loadFavoriteStatus() async {
+    final status = await FavoriteService.isFavorite(widget.item.url);
+    setState(() => isFavorite = status);
   }
 
   Future<void> _launchUrl() async {
@@ -34,7 +40,7 @@ class _MovieCardState extends State<MovieCard> {
 
   Future<void> _toggleFavorite() async {
     setState(() => isFavorite = !isFavorite);
-    await FavoriteService.toggleFavorite(widget.item.url, isFavorite);
+    await FavoriteService.toggleFavorite(widget.item, isFavorite);
     widget.onFavoriteChanged?.call();
   }
 

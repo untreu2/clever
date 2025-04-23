@@ -61,7 +61,7 @@ class _HomeScreenState extends State<HomeScreen>
         language: 'en',
       );
 
-      final favUrls = await FavoriteService.getFavoriteUrls();
+      final favUrls = await FavoriteService.getFavoriteMovies();
 
       setState(() {
         movies =
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen>
   Future<void> _loadMoviesList() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = prefs.getString('movie_list');
-    final favUrls = await FavoriteService.getFavoriteUrls();
+    final favUrls = await FavoriteService.getFavoriteMovies();
 
     if (jsonString != null) {
       final List decodedList = jsonDecode(jsonString);
@@ -120,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _onFavoriteChanged() async {
-    final favUrls = await FavoriteService.getFavoriteUrls();
+    final favUrls = await FavoriteService.getFavoriteMovies();
     setState(() {
       movies =
           movies.map((movie) {
